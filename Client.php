@@ -8,7 +8,7 @@ defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', 11024); #TCP服务端口
 defined('GLOBAL_SWOOLE') || define('GLOBAL_SWOOLE', 0); #是否swoole环境
 defined('DATA_LISTEN_IP')|| define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
 defined('READ_LISTEN_IP')|| define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
-defined('AUTOLOAD')      || define('AUTOLOAD', __DIR__ . '/../vendor/autoload.php'); #自动载入
+defined('AUTOLOAD')      || define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 if (!isset($logTimePattern)) $logTimePattern = [];
 
 require AUTOLOAD;
@@ -125,7 +125,7 @@ $clientConf = array_merge($clientConf, [
         },
     ],
     // 进程内加载的文件
-    'worker_load' => defined('WORKER_LOAD') ? WORKER_LOAD : __DIR__ . '/../vendor/myphps/myphp/base.php',
+    'worker_load' => defined('WORKER_LOAD') ? WORKER_LOAD : __DIR__ . '/vendor/myphps/myphp/base.php',
 ]);
 
 if (GLOBAL_SWOOLE) {

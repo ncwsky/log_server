@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types=1);
+//declare(strict_types=1);
 $_SERVER['SCRIPT_FILENAME'] = __FILE__; //重置运行 不设置此项使用相对路径后台运行时（ROOT会是相对路径）会加载了不相应的引入文件
 file_exists(__DIR__ . '/server.conf.php') && require __DIR__ . '/server.conf.php';
 defined('DATA_SERVER_WS_PORT')   || define('DATA_SERVER_WS_PORT', 7011); #ws服务端口
 defined('GLOBAL_SWOOLE')         || define('GLOBAL_SWOOLE', 0); #是否swoole环境
-defined('AUTOLOAD')              || define('AUTOLOAD', __DIR__ . '/../vendor/autoload.php'); #自动载入
+defined('AUTOLOAD')              || define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 
 require AUTOLOAD;
 
@@ -66,7 +66,7 @@ $serverConf = array_merge($serverConf, [
     'port' => DATA_SERVER_WS_PORT, //监听地址
     'type' => 'websocket', //类型[http tcp websocket] 可通过修改createServer方法自定义服务创建
     // 进程内加载的文件
-    'worker_load'=> defined('WORKER_LOAD') ? WORKER_LOAD : __DIR__ . '/../vendor/myphps/myphp/base.php',
+    'worker_load'=> defined('WORKER_LOAD') ? WORKER_LOAD : __DIR__ . '/vendor/myphps/myphp/base.php',
     'event' => $event,
 ]);
 
