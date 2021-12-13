@@ -10,7 +10,7 @@
 //define('DATA_CLEAR_TIME_TICK', 86400); #数据定时清理时间 最大86400
 //define('DATA_EXPIRED_TIME', 2678400); #数据过期时间 31天
 //define('DATA_MAX_BUFFER_SIZE', 1024000); #最大日志buffer，大于这个值就写磁盘 1M
-//define('DATA_PUSH_ADDRESS', '127.0.0.1:7011'); #汇总数据推送地址
+//define('DATA_PUSH_ADDRESS', '127.0.0.1:57011'); #汇总数据推送地址
 //define('DATA_PUSH_TIME_TICK', 1); #汇总数据定时推送数据时间
 
 //define('DATA_SQLITE', 1); //使用sqlite记录接口统计
