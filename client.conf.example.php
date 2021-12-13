@@ -4,6 +4,7 @@
 //define('DATA_TCP_PORT', 11024); #TCP服务端口
 //define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
 //define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
+//define('REPORT_IP_KEY', 'REPORT_IP'); #报告ip指令 如需要广播获取ip请设置值 如 REPORT_IP
 
 //define('DATA_WRITE_TIME_TICK', 30); #数据定时落地时间 30秒
 //define('DATA_CLEAR_TIME_TICK', 86400); #数据定时清理时间 最大86400

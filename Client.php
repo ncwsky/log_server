@@ -8,6 +8,7 @@ defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', 11024); #TCP服务端口
 defined('GLOBAL_SWOOLE') || define('GLOBAL_SWOOLE', 0); #是否swoole环境
 defined('DATA_LISTEN_IP')|| define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
 defined('READ_LISTEN_IP')|| define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
+defined('REPORT_IP_KEY') || define('REPORT_IP_KEY', ''); #报告ip指令
 defined('AUTOLOAD')      || define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 if (!isset($logTimePattern)) $logTimePattern = [];
 
@@ -102,7 +103,7 @@ $clientConf = array_merge($clientConf, [
         'onMessage' => function (\Workerman\Connection\ConnectionInterface $connection, $data) { //workerman
             if (!is_array($data)) return;
             #echo $data['msg'],PHP_EOL;
-            if ($data['msg'] == 'REPORT_IP') {
+            if ($data['msg'] === REPORT_IP_KEY && REPORT_IP_KEY!=='') {
                 $connection->send('OK:' . DATA_TCP_PORT);
                 return;
             }
@@ -115,7 +116,7 @@ $clientConf = array_merge($clientConf, [
 
             if (!is_array($data)) return;
             #echo $data['msg'],PHP_EOL;
-            if ($data['msg'] == 'REPORT_IP') {
+            if ($data['msg'] === REPORT_IP_KEY && REPORT_IP_KEY!=='') {
                 $server->send('OK:' . DATA_TCP_PORT);
                 return;
             }
