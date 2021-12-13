@@ -1,7 +1,7 @@
 <?php
 //define('GLOBAL_SWOOLE', 0); //是否swoole环境
-//define('DATA_UDP_PORT', 11024); #UDP服务端口
-//define('DATA_TCP_PORT', 11024); #TCP服务端口
+//define('DATA_UDP_PORT', 55011); #UDP服务端口 不建议使用默认值 建议重置
+//define('DATA_TCP_PORT', 55011); #TCP服务端口
 //define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
 //define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
 //define('REPORT_IP_KEY', 'REPORT_IP'); #报告ip指令 如需要广播获取ip请设置值 如 REPORT_IP
