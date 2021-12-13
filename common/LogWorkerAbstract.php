@@ -1,8 +1,8 @@
 <?php
 // 全局常量定义
-defined('DATA_WRITE_TIME_TICK') || define('DATA_WRITE_TIME_TICK', 60); #数据定时落地时间
+defined('DATA_WRITE_TIME_TICK') || define('DATA_WRITE_TIME_TICK', 30); #数据定时落地时间
 defined('DATA_CLEAR_TIME_TICK') || define('DATA_CLEAR_TIME_TICK', 86400); #数据定时清理时间
-defined('DATA_EXPIRED_TIME')    || define('DATA_EXPIRED_TIME', 1296000); #数据过期时间
+defined('DATA_EXPIRED_TIME')    || define('DATA_EXPIRED_TIME', 2678400); #数据过期时间 31天
 defined('DATA_MAX_BUFFER_SIZE') || define('DATA_MAX_BUFFER_SIZE', 1024000); #最大日志buffer，大于这个值就写磁盘 1M
 defined('DATA_PUSH_ADDRESS')    || define('DATA_PUSH_ADDRESS', ''); #汇总数据推送地址 如127.0.0.1:7011
 defined('DATA_PUSH_TIME_TICK')  || define('DATA_PUSH_TIME_TICK', 1); #汇总数据定时推送数据时间 建议1-10
