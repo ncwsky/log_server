@@ -31,7 +31,7 @@ class LogClient
      */
     protected static $timeMap = [];
 
-    public static $address = '127.0.0.1:11024';
+    public static $address = '127.0.0.1:55011';
     public static $module = 'default';
     public static $referer_ip = ''; // 来源ip 未指定默认是读取当前服务的ip
 

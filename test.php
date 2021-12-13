@@ -4,7 +4,7 @@ require __DIR__ . '/common/LogClient.php';
 require __DIR__ . '/common/LogPackage.php';
 
 $module = ['api','chain'];
-LogClient::$address = '192.168.0.245:11024';
+LogClient::$address = '192.168.0.245:55011';
 
 $time_start = microtime(true);
 $data = LogPackage::toEncode('api','index/info', $time_start,0,0,0,'REPORT_IP');
