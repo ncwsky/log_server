@@ -3,7 +3,7 @@
 //declare(strict_types=1);
 $_SERVER['SCRIPT_FILENAME'] = __FILE__; //重置运行 不设置此项使用相对路径后台运行时（ROOT会是相对路径）会加载了不相应的引入文件
 file_exists(__DIR__ . '/server.conf.php') && require __DIR__ . '/server.conf.php';
-defined('DATA_SERVER_WS_PORT')   || define('DATA_SERVER_WS_PORT', 7011); #ws服务端口
+defined('DATA_SERVER_WS_PORT')   || define('DATA_SERVER_WS_PORT', 57011); #ws服务端口 不建议使用默认值 建议重置
 defined('GLOBAL_SWOOLE')         || define('GLOBAL_SWOOLE', 0); #是否swoole环境
 defined('AUTOLOAD')              || define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 

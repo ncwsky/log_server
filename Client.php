@@ -3,8 +3,8 @@
 //declare(strict_types=1);
 $_SERVER['SCRIPT_FILENAME'] = __FILE__; //重置运行 不设置此项使用相对路径后台运行时（ROOT会是相对路径）会加载了不相应的引入文件
 file_exists(__DIR__ . '/client.conf.php') && require __DIR__ . '/client.conf.php';
-defined('DATA_UDP_PORT') || define('DATA_UDP_PORT', 11024); #UDP服务端口
-defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', 11024); #TCP服务端口
+defined('DATA_UDP_PORT') || define('DATA_UDP_PORT', 55011); #UDP服务端口 不建议使用默认值 建议重置
+defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', 55011); #TCP服务端口
 defined('GLOBAL_SWOOLE') || define('GLOBAL_SWOOLE', 0); #是否swoole环境
 defined('DATA_LISTEN_IP')|| define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
 defined('READ_LISTEN_IP')|| define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
