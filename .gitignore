@@ -1,0 +1,10 @@
+.idea
+*.log
+*.pid
+client.conf.php
+server.conf.php
+/log
+/data
+vendor
+/*.lock
+/runLock
