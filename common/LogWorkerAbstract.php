@@ -7,7 +7,7 @@ defined('DATA_MAX_BUFFER_SIZE') || define('DATA_MAX_BUFFER_SIZE', 1024000); #最
 defined('DATA_PUSH_ADDRESS')    || define('DATA_PUSH_ADDRESS', ''); #汇总数据推送地址 如127.0.0.1:7011
 defined('DATA_PUSH_TIME_TICK')  || define('DATA_PUSH_TIME_TICK', 1); #汇总数据定时推送数据时间 建议1-10
 defined('GLOBAL_SWOOLE')        || define('GLOBAL_SWOOLE', 0); #是否swoole环境
-defined('DATA_SQLITE')          || define('DATA_SQLITE', false); #使用sqlite记录
+defined('DATA_SQLITE')          || define('DATA_SQLITE', 0); #使用sqlite记录
 defined('DATA_SLOW_TIME')       || define('DATA_SLOW_TIME', 0); #慢日志配置 0关闭 单位秒.支持小数位 大于此时间记录到慢日志
 /**
  * Class LogWorkerAbstract
