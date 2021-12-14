@@ -1,51 +1,22 @@
 #!/usr/bin/env php
 <?php
 //declare(strict_types=1);
-/**
- * 获取命令参数值
- * @param $options
- * @param $name
- * @param string $longName
- * @param mixed $def
- * @return mixed|string
- */
-$getOpt = function ($options, $name, $longName = '', $def='') {
-    $val = $def;
-    $val = isset($options[$name]) ? $options[$name] : $val;
-    if ($longName !== '') {
-        $val = isset($options[$longName]) ? $options[$longName] : $val;
-    }
-    return $val;
-};
-/**
- * 是否存在命令参数
- * @param $options
- * @param $name
- * @param string $longName
- * @return bool
- */
-$hasOpt = function ($options, $name, $longName = '') {
-    if (isset($options[$name])) return true;
-    if ($longName !== '' && isset($options[$longName])) {
-        return true;
-    }
-    return false;
-};
+require __DIR__ . '/GetOpt.php';
 //解析命令参数
-$options = getopt('hasc:u:t:', ['help', 'all', 'swoole', 'config:', 'udp:', 'tcp:']);
+GetOpt::parse('hasc:u:t:', ['help', 'all', 'swoole', 'config:', 'udp:', 'tcp:']);
 //处理命令参数
-$config = $getOpt($options, 'c', 'config', __DIR__ . '/client.conf.php');
-$isSwoole = $hasOpt($options, 's', 'swoole');
-$udpPort = $getOpt($options, 'u', 'udp', '55011');
-$tcpPort = $getOpt($options, 't', 'tcp', $udpPort);
-$isAll = $hasOpt($options, 'a', 'all');
+$config = GetOpt::val('c', 'config', __DIR__ . '/client.conf.php');
+$isSwoole = GetOpt::has('s', 'swoole');
+$udpPort = GetOpt::val('u', 'udp', '55011');
+$tcpPort = GetOpt::val('t', 'tcp', $udpPort);
+$isAll = GetOpt::has('a', 'all');
 
-if ($hasOpt($options, 'h', 'help')) {
+if (GetOpt::has('h', 'help')) {
     echo 'Usage: php Client.php OPTION [restart|stop]
    or: Client.php OPTION [restart|stop]
 
    -h --help
-   -c --config  配置文件 默认为当前下的client.conf.php 优先使用配置文件
+   -c --config  配置文件 默认为当前下的 client.conf.php 优先使用配置文件
    -u --udp     udp port
    -t --tcp     tcp port 未配置时使用udp端口
    -a --all     监听0.0.0.0
