@@ -1,14 +1,65 @@
 #!/usr/bin/env php
 <?php
 //declare(strict_types=1);
-$_SERVER['SCRIPT_FILENAME'] = __FILE__; //重置运行 不设置此项使用相对路径后台运行时（ROOT会是相对路径）会加载了不相应的引入文件
-file_exists(__DIR__ . '/client.conf.php') && require __DIR__ . '/client.conf.php';
-defined('DATA_UDP_PORT') || define('DATA_UDP_PORT', 55011); #UDP服务端口 不建议使用默认值 建议重置
-defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', 55011); #TCP服务端口
-defined('GLOBAL_SWOOLE') || define('GLOBAL_SWOOLE', 0); #是否swoole环境
-defined('DATA_LISTEN_IP')|| define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
+/**
+ * 获取命令参数值
+ * @param $options
+ * @param $name
+ * @param string $longName
+ * @param mixed $def
+ * @return mixed|string
+ */
+$getOpt = function ($options, $name, $longName = '', $def='') {
+    $val = $def;
+    $val = isset($options[$name]) ? $options[$name] : $val;
+    if ($longName !== '') {
+        $val = isset($options[$longName]) ? $options[$longName] : $val;
+    }
+    return $val;
+};
+/**
+ * 是否存在命令参数
+ * @param $options
+ * @param $name
+ * @param string $longName
+ * @return bool
+ */
+$hasOpt = function ($options, $name, $longName = '') {
+    if (isset($options[$name])) return true;
+    if ($longName !== '' && isset($options[$longName])) {
+        return true;
+    }
+    return false;
+};
+//解析命令参数
+$options = getopt('hasc:u:t:', ['help', 'all', 'swoole', 'config:', 'udp:', 'tcp:']);
+//处理命令参数
+$config = $getOpt($options, 'c', 'config', __DIR__ . '/client.conf.php');
+$isSwoole = $hasOpt($options, 's', 'swoole');
+$udpPort = $getOpt($options, 'u', 'udp', '55011');
+$tcpPort = $getOpt($options, 't', 'tcp', $udpPort);
+$isAll = $hasOpt($options, 'a', 'all');
+
+if ($hasOpt($options, 'h', 'help')) {
+    echo 'Usage: php Client.php OPTION [restart|stop]
+   or: Client.php OPTION [restart|stop]
+
+   -h --help
+   -c --config  配置文件 默认为当前下的client.conf.php 优先使用配置文件
+   -u --udp     udp port
+   -t --tcp     tcp port 未配置时使用udp端口
+   -a --all     监听0.0.0.0
+   --swoole     swolle运行',PHP_EOL;
+    exit(0);
+}
+$_SERVER['SCRIPT_FILENAME'] = __FILE__; //重置运行 不设置此项使用相对路径运行时 会加载了不相应的引入文件
+file_exists($config) && require $config;
+defined('DATA_UDP_PORT') || define('DATA_UDP_PORT', $udpPort); #UDP服务端口 不建议使用默认值 建议重置
+defined('DATA_TCP_PORT') || define('DATA_TCP_PORT', $tcpPort); #TCP服务端口
+defined('GLOBAL_SWOOLE') || define('GLOBAL_SWOOLE', $isSwoole); #是否swoole环境
+defined('DATA_LISTEN_IP')|| define('DATA_LISTEN_IP', $isAll ? '0.0.0.0' : '127.0.0.1'); #监听地址
 defined('READ_LISTEN_IP')|| define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
-defined('REPORT_IP_KEY') || define('REPORT_IP_KEY', ''); #报告ip指令
+defined('REPORT_IP_KEY') || define('REPORT_IP_KEY', 'REPORT_IP'); #报告ip指令
 defined('AUTOLOAD')      || define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 if (!isset($logTimePattern)) $logTimePattern = [];
 
