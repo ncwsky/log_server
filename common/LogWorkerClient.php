@@ -809,12 +809,13 @@ class LogWorkerClient extends LogWorkerAbstract
         }
         return $str;
     }
+
     /**
      * 获得统计数据
      * @param string $path
      * @param string $date
      * @param bool $log_ip 是否记录ip
-     * @return bool/string
+     * @return string
      */
     protected static function getStatistic($path, $date, $log_ip=false)
     {
@@ -896,7 +897,7 @@ class LogWorkerClient extends LogWorkerAbstract
      * @param string $msg
      * @param int $offset 偏移
      * @param int $count
-     * @return string|array
+     * @return string
      */
     public static function getLog($type, $module, $name='', $start_time = 0, $end_time = 0, $code = '', $msg = '', $offset = 0, $count = 100)
     {

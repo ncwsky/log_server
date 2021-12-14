@@ -22,28 +22,41 @@ if (GLOBAL_SWOOLE) {
                 'ip' => READ_LISTEN_IP,
                 'port' => DATA_TCP_PORT,
                 'setting' => [
+                    //'socket_buffer_size' => 1 * 1024 * 1024, //1M 客户端连接的缓存区长度 默认2M
+                    //'buffer_output_size' => 1 * 1024 * 1024, //1M 发送输出缓存区内存长度 默认2M
+
                     //结束符
-                    'open_eof_check' => true, //打开EOF检测 可能会同时收到多个包 需要拆分
-                    'package_eof' => "\n", //设置EOF
-                    'socket_buffer_size' => 1 * 1024 * 1024, //1M 客户端连接的缓存区长度
-                    'buffer_output_size' => 1 * 1024 * 1024, //1M 发送输出缓存区内存长度
+                    #'open_eof_check' => true, //打开EOF检测 可能会同时收到多个包 需要拆分
+                    #'package_eof' => "\n", //设置EOF
+
+                    'open_length_check' => true,
+                    'package_length_type' => 'N',
+                    'package_length_offset' => 0,
+                    'package_body_offset' => 0,
                 ],
                 'event' => [
                     'onReceive' => function ($server, $fd, $reactor_id, $data) {
+                        //定长
+                        $data = (array)json_decode(substr($data,4), true);
+                        $result = LogWorkerClient::getHandle($data); #获取数据处理
+                        $server->send($fd, pack('N', 4 + strlen($result)) . $result);
+                        return;
+
+                        //换行符
                         $data = rtrim($data, "\r\n"); //结束符
                         if (strpos($data, "\n")) {
                             $multiData = explode("\n", $data);
                             foreach ($multiData as $data) {
                                 $data = (array)json_decode($data, true);
                                 $result = LogWorkerClient::getHandle($data); #获取数据处理
-                                if (is_string($result)) $server->send($fd, $result."\n");
+                                $server->send($fd, $result."\n");
                             }
                             return;
                         }
 
                         $data = (array)json_decode($data, true);
                         $result = LogWorkerClient::getHandle($data); #获取数据处理
-                        if (is_string($result) && $result!=='') $server->send($fd, $result."\n");
+                        $server->send($fd, $result."\n");
                     },
                 ]
             ],
@@ -51,7 +64,7 @@ if (GLOBAL_SWOOLE) {
         'setting' => [
             'worker_num' => 1,
             'pid_file' => __DIR__ . '/client2.pid',
-            'log_file' => __DIR__ . '/client2.log', //日志文件
+            'log_file' => __DIR__ . '/client.log', //日志文件
             'log_level' => 0,
         ]
     ];
@@ -62,22 +75,22 @@ if (GLOBAL_SWOOLE) {
                 'ip' => READ_LISTEN_IP,
                 'port' => DATA_TCP_PORT,
                 'setting' => [
-                    'protocol' => '\Workerman\Protocols\Text',
+                    //'protocol' => '\Workerman\Protocols\Text',
+                    'protocol' => '\Workerman\Protocols\Frame',
                 ],
                 'event' => [
                     'onMessage' => function (\Workerman\Connection\ConnectionInterface $connection, $data) {
                         $data = (array)json_decode($data, true);
-                        $result = LogWorkerClient::getHandle($data); #获取数据处理
-                        if (is_string($result)) $connection->send($result);
+                        $connection->send(LogWorkerClient::getHandle($data)); //发送处理结果
                     },
                 ]
             ],
         ],
         'setting' => [
             'count' => 1,
-            'stdoutFile' => __DIR__ . '/stdout1.log', //终端输出
+            'stdoutFile' => __DIR__ . '/client.log', //终端输出
             'pidFile' => __DIR__ . '/client1.pid',
-            'logFile' => __DIR__ . '/client1.log', //日志文件
+            'logFile' => __DIR__ . '/client.log', //日志文件
             'protocol' => 'LogPackage',
         ]
     ];
