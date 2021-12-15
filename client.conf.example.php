@@ -1,8 +1,8 @@
 <?php
-#define('GLOBAL_SWOOLE', 0); //是否swoole环境
+#define('GLOBAL_SWOOLE', 1); //是否swoole环境 默认workerman
 #define('DATA_UDP_PORT', 55011); #UDP服务端口 不建议使用默认值 建议重置
 #define('DATA_TCP_PORT', 55011); #TCP服务端口
-#define('DATA_LISTEN_IP', '127.0.0.1'); #监听地址
+#define('DATA_LISTEN_IP', '0.0.0.0'); #监听地址 默认127.0.0.1
 #define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
 #define('REPORT_IP_KEY', 'REPORT_IP'); #报告ip指令 如需要广播获取ip请设置值 如 REPORT_IP
 
@@ -14,7 +14,7 @@
 #define('DATA_PUSH_TIME_TICK', 1); #汇总数据定时推送数据时间
 
 #define('DATA_SQLITE', 1); //使用sqlite记录接口统计
-#define('VENDOR_DIR', '/vendor'); //指定vendor的相对目录
+#define('VENDOR_DIR', '/../vendor'); //指定vendor的相对目录
 #define('AUTOLOAD', __DIR__ . '/vendor/autoload.php'); #自动载入
 #define('WORKER_LOAD', __DIR__ . '/vendor/myphps/myphp/base.php'); #worker进程初始时载入
 
