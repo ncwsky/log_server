@@ -134,7 +134,7 @@ class LogWorkerClient extends LogWorkerAbstract
             self::$data[$path] = [];
         }
         if (!isset(self::$data[$path][$ip])) {
-            self::$data[$path][$ip] = ['code'=>[], 'slow'=>0, 'max'=>0, 'min'=>0, 'suc_cost_time' => 0, 'fail_cost_time' => 0, 'suc_count' => 0, 'fail_count' => 0];
+            self::$data[$path][$ip] = ['code'=>[], 'slow'=>0, 'max'=>0, 'min'=>1, 'suc_cost_time' => 0, 'fail_cost_time' => 0, 'suc_count' => 0, 'fail_count' => 0];
         }
         if (!isset(self::$data[$path][$ip]['code'][$code])) {
             self::$data[$path][$ip]['code'][$code] = 0;
@@ -206,23 +206,23 @@ class LogWorkerClient extends LogWorkerAbstract
                 }
                 $db = self::sqliteDb($sqlite);
                 $db->beginTrans();
+                //$model = new Model('statistic', $db);
                 foreach ($ip_data as $ip => $data) {
-                    //$data['suc_cost_time'] = round($data['suc_cost_time'],6); #6位小数
-                    //$data['fail_cost_time'] = round($data['fail_cost_time'],6);
-
+                    //$model->setData(
                     $db->add([
                         'path'=>$name,
                         'ip'=>$ip,
                         'time'=>$time,
                         'slow_times'=>$data['slow'],
-                        'max_cost_time'=>$data['max'],
-                        'min_cost_time'=>$data['min'],
+                        'max_cost_time'=>round($data['max'],6),
+                        'min_cost_time'=>round($data['min'],6),
                         'suc_count'=>$data['suc_count'],
-                        'suc_cost_time'=>$data['suc_cost_time'],
+                        'suc_cost_time'=>round($data['suc_cost_time'],6),
                         'fail_count'=>$data['fail_count'],
-                        'fail_cost_time'=>$data['fail_cost_time'],
+                        'fail_cost_time'=>round($data['fail_cost_time'],6),
                         'code'=>json_encode($data['code'])
                     ],'statistic');
+                    //$model->save(null, null, 0);
                 }
                 $db->commit();
             }
@@ -444,16 +444,19 @@ class LogWorkerClient extends LogWorkerAbstract
                 break;
             case 'get_statistic':
                 $date = isset($data['date']) ? $data['date'] : '';
+                $minute = isset($data['minute']) ? (int)$data['minute'] : 5; //预处理x分钟数据
+                if ($minute < 1 || $minute > 60) $minute = 5;
+                $second = $minute * 60;
                 if($name==='') $name = self::ALL_NAME;
 
                 if(DATA_SQLITE){
-                    $buffer = self::getStatisticSqlite($type, $module, $date, $name);
+                    $buffer = self::getStatisticSqlite($type, $module, $date, $name, $second);
                 }else{
                     $path = '';
                     if ($type != '' && $module != '') {
                         $path = $type . '/' . $module . '/' . str_replace('/', self::NAME_SLASH, $name);
                     }
-                    $buffer = self::getStatistic($path, $date);
+                    $buffer = self::getStatistic($path, $date, $second);
                 }
 
                 break;
@@ -746,78 +749,41 @@ class LogWorkerClient extends LogWorkerAbstract
      * @param $module
      * @param $date
      * @param string $name
+     * @param int $second
      * @param bool $log_ip
      * @return string
      * @throws Exception
      */
-    protected static function getStatisticSqlite($type, $module, $date, $name='', $log_ip=false)
+    protected static function getStatisticSqlite($type, $module, $date, $name='', $second=300, $log_ip=false)
     {
         $data = [];
-
         $sqliteList = $module === '' ? glob(DATA_STATISTIC_DIR . '/' . $date . '.' . $type . '.*.sqlite') : [DATA_STATISTIC_DIR . '/' . $date . '.' . $type . '.' . $module . '.sqlite'];
-        foreach ($sqliteList as $sqlite){
+        foreach ($sqliteList as $sqlite) {
             if (!is_file($sqlite)) continue;
 
             $db = self::sqliteDb($sqlite);
             #$db::log_on();
             // 预处理统计数据，每5分钟一行
             // [time=>[ip=>['suc_count'=>xx, 'suc_cost_time'=>xx, 'fail_count'=>xx, 'fail_cost_time'=>xx, 'code_map'=>[code=>count, ..], ..], ..]
-            $sql = self::sqliteSql('ip,time,suc_count,suc_cost_time,fail_count,fail_cost_time,code', '', '', 0, $name);
+            $sql = self::sqliteSql('*', '', '', 0, $name); //'ip,time,slow_times,max_cost_time,min_cost_time,suc_count,suc_cost_time,fail_count,fail_cost_time,code'
             $res = $db->query($sql);
-            while ($explode=$db->fetch_array($res,'num')) {
-                list($ip, $time, $suc_count, $suc_cost_time, $fail_count, $fail_cost_time, $code_map) = $explode;
-                if(false===$log_ip) $ip = '127.0.0.1';
-                $time = ceil($time / 300) * 300;
-                if (!isset($data[$time])) {
-                    $data[$time] = [];
-                }
-                if (!isset($data[$time][$ip])) {
-                    $data[$time][$ip] = array(
-                        'suc_count' => 0,
-                        'suc_cost_time' => 0,
-                        'fail_count' => 0,
-                        'fail_cost_time' => 0,
-                        'code_map' => [],
-                    );
-                }
-                $data[$time][$ip]['suc_count'] += $suc_count;
-                $data[$time][$ip]['suc_cost_time'] += $suc_cost_time;
-                $data[$time][$ip]['fail_count'] += $fail_count;
-                $data[$time][$ip]['fail_cost_time'] += $fail_cost_time;
-                $code_map = json_decode(trim($code_map), true);
-                if ($code_map && is_array($code_map)) {
-                    foreach ($code_map as $code => $count) {
-                        if (!isset($data[$time][$ip]['code_map'][$code])) {
-                            $data[$time][$ip]['code_map'][$code] = 0;
-                        }
-                        $data[$time][$ip]['code_map'][$code] += $count;
-                    }
-                }
+            while ($r = $db->fetch_array($res)) {
+                self::formatStatisticData($data, $r, $second, $log_ip);
             } // end while
         }
-
-        ksort($data);
-
         // 整理数据
-        $str = '';
-        foreach ($data as $time => $items) {
-            foreach ($items as $ip => $item) {
-                $item['suc_cost_time'] = round($item['suc_cost_time'], 6);
-                $item['fail_cost_time'] = round($item['fail_cost_time'], 6);
-                $str .= "$ip\t$time\t{$item['suc_count']}\t{$item['suc_cost_time']}\t{$item['fail_count']}\t{$item['fail_cost_time']}\t" . json_encode($item['code_map']) . "\n";
-            }
-        }
-        return $str;
+        return self::formatStatisticStr($data);
     }
 
     /**
      * 获得统计数据
      * @param string $path
      * @param string $date
+     * @param int $second
      * @param bool $log_ip 是否记录ip
      * @return string
      */
-    protected static function getStatistic($path, $date, $log_ip=false)
+    protected static function getStatistic($path, $date, $second=300, $log_ip=false)
     {
         if (empty($path) || empty($date)) {
             return '';
@@ -832,56 +798,98 @@ class LogWorkerClient extends LogWorkerAbstract
         }
 
         // 预处理统计数据，每5分钟一行
-        // [time=>[ip=>['suc_count'=>xx, 'suc_cost_time'=>xx, 'fail_count'=>xx, 'fail_cost_time'=>xx, 'code_map'=>[code=>count, ..], ..], ..]
+        // [time=>[ip=>['suc_count'=>xx, 'suc_cost_time'=>xx, 'fail_count'=>xx, 'fail_cost_time'=>xx, 'code_map'=>[code=>count, ..],'slow'=>xx,'max'=>xx,'min'=>xx],..], ..]
         $data = [];
         while (!feof($fp)) {
             $line = fgets($fp, 4096);
             if ($line) {
                 $explode = explode("\t", $line);
-                if (count($explode) < 7) {
+                if (count($explode) < 10) {
                     continue;
                 }
-                list($ip, $time, $suc_count, $suc_cost_time, $fail_count, $fail_cost_time, $code_map) = $explode;
-                if(false===$log_ip) $ip = '127.0.0.1';
-                $time = ceil($time / 300) * 300;
-                if (!isset($data[$time])) {
-                    $data[$time] = [];
-                }
-                if (!isset($data[$time][$ip])) {
-                    $data[$time][$ip] = array(
-                        'suc_count' => 0,
-                        'suc_cost_time' => 0,
-                        'fail_count' => 0,
-                        'fail_cost_time' => 0,
-                        'code_map' => [],
-                    );
-                }
-                $data[$time][$ip]['suc_count'] += $suc_count;
-                $data[$time][$ip]['suc_cost_time'] += $suc_cost_time;
-                $data[$time][$ip]['fail_count'] += $fail_count;
-                $data[$time][$ip]['fail_cost_time'] += $fail_cost_time;
-                $code_map = json_decode(trim($code_map), true);
-                if ($code_map && is_array($code_map)) {
-                    foreach ($code_map as $code => $count) {
-                        if (!isset($data[$time][$ip]['code_map'][$code])) {
-                            $data[$time][$ip]['code_map'][$code] = 0;
-                        }
-                        $data[$time][$ip]['code_map'][$code] += $count;
-                    }
-                }
+                //list($ip, $time, $suc_count, $suc_cost_time, $fail_count, $fail_cost_time, $code_map, $slow, $max, $min) = $explode;
+                $r = [
+                    'ip' => $explode[0],
+                    'time' => $explode[1],
+                    'suc_count' => $explode[2],
+                    'suc_cost_time' => $explode[3],
+                    'fail_count' => $explode[4],
+                    'fail_cost_time' => $explode[5],
+                    'code' => $explode[6],
+                    'slow_times' => $explode[7],
+                    'max_cost_time' => $explode[8],
+                    'min_cost_time' => $explode[9]
+                ];
+
+                self::formatStatisticData($data, $r, $second, $log_ip);
             } // end if
         } // end while
-
         fclose($fp);
-        ksort($data);
-
         // 整理数据
+        return self::formatStatisticStr($data);
+    }
+
+    /**
+     * 处理统计数据
+     * @param array $data
+     * @param array $item
+     * @param int $second
+     * @param bool $log_ip
+     */
+    protected static function formatStatisticData(&$data, $item, $second=300, $log_ip = false)
+    {
+        $time = ceil($item['time'] / $second) * $second;
+        $ip = $log_ip ? $item['ip'] : '127.0.0.1';
+        if (!isset($data[$time])) {
+            $data[$time] = [];
+        }
+        if (!isset($data[$time][$ip])) {
+            $data[$time][$ip] = array(
+                'slow_times' => 0,
+                'max_cost_time' => 0,
+                'min_cost_time' => 1,
+                'suc_count' => 0,
+                'suc_cost_time' => 0,
+                'fail_count' => 0,
+                'fail_cost_time' => 0,
+                'code_map' => [],
+            );
+        }
+        $data[$time][$ip]['slow_times'] += $item['slow_times'];
+        if ($data[$time][$ip]['max_cost_time'] < $item['max_cost_time']) $data[$time][$ip]['max_cost_time'] = $item['max_cost_time'];
+        if ($data[$time][$ip]['min_cost_time'] > $item['min_cost_time']) $data[$time][$ip]['min_cost_time'] = $item['min_cost_time'];
+
+        $data[$time][$ip]['suc_count'] += $item['suc_count'];
+        $data[$time][$ip]['suc_cost_time'] += $item['suc_cost_time'];
+        $data[$time][$ip]['fail_count'] += $item['fail_count'];
+        $data[$time][$ip]['fail_cost_time'] += $item['fail_cost_time'];
+        $code_map = json_decode(trim($item['code']), true);
+        if ($code_map && is_array($code_map)) {
+            foreach ($code_map as $code => $count) {
+                if (!isset($data[$time][$ip]['code_map'][$code])) {
+                    $data[$time][$ip]['code_map'][$code] = 0;
+                }
+                $data[$time][$ip]['code_map'][$code] += $count;
+            }
+        }
+    }
+
+    /**
+     * 格式输出的统计数据
+     * @param array $data
+     * @return string
+     */
+    protected static function formatStatisticStr($data)
+    {
         $str = '';
+        ksort($data);
         foreach ($data as $time => $items) {
             foreach ($items as $ip => $item) {
+                $item['max_cost_time'] = round($item['max_cost_time'], 6);
+                $item['min_cost_time'] = round($item['min_cost_time'], 6);
                 $item['suc_cost_time'] = round($item['suc_cost_time'], 6);
                 $item['fail_cost_time'] = round($item['fail_cost_time'], 6);
-                $str .= "$ip\t$time\t{$item['suc_count']}\t{$item['suc_cost_time']}\t{$item['fail_count']}\t{$item['fail_cost_time']}\t" . json_encode($item['code_map']) . "\n";
+                $str .= "$ip\t$time\t{$item['suc_count']}\t{$item['suc_cost_time']}\t{$item['fail_count']}\t{$item['fail_cost_time']}\t" . json_encode($item['code_map']) . "\t{$item['slow_times']}\t{$item['max_cost_time']}\t{$item['min_cost_time']}\n";
             }
         }
         return $str;

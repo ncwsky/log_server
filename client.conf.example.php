@@ -5,7 +5,7 @@
 #define('DATA_LISTEN_IP', '0.0.0.0'); #监听地址 默认127.0.0.1
 #define('READ_LISTEN_IP', '0.0.0.0'); #终端数据读取监听地址
 #define('REPORT_IP_KEY', 'REPORT_IP'); #报告ip指令 如需要广播获取ip请设置值 如 REPORT_IP
-
+#define('DATA_SLOW_TIME', 3); #慢日志配置 0关闭 单位秒.支持小数位 大于此时间记录到慢日志
 #define('DATA_WRITE_TIME_TICK', 30); #数据定时落地时间 30秒
 #define('DATA_CLEAR_TIME_TICK', 86400); #数据定时清理时间 最大86400
 #define('DATA_EXPIRED_TIME', 2678400); #数据过期时间 31天
