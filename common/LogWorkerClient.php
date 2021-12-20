@@ -142,8 +142,10 @@ class LogWorkerClient extends LogWorkerAbstract
         self::$data[$path][$ip]['code'][$code]++;
 
         if(DATA_SLOW_TIME>0 && $cost_time>DATA_SLOW_TIME) self::$data[$path][$ip]['slow']++;
-        if(self::$data[$path][$ip]['max']<$cost_time) self::$data[$path][$ip]['max']=$cost_time;
-        if(self::$data[$path][$ip]['min']>$cost_time) self::$data[$path][$ip]['min']=$cost_time;
+        if ($cost_time > 0) {
+            if (self::$data[$path][$ip]['max'] < $cost_time) self::$data[$path][$ip]['max'] = $cost_time;
+            if (self::$data[$path][$ip]['min'] > $cost_time) self::$data[$path][$ip]['min'] = $cost_time;
+        }
 
         if ($success) {
             self::$data[$path][$ip]['suc_cost_time'] += $cost_time;
