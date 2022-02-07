@@ -53,16 +53,23 @@ if (GLOBAL_SWOOLE) {
                     #'package_eof' => "\n", //设置EOF
 
                     'open_length_check' => true,
-                    'package_length_type' => 'N',
-                    'package_length_offset' => 0,
-                    'package_body_offset' => 0,
+                    'package_length_func' => function ($buffer) { //自定义解析长度
+                        if (\strlen($buffer) < 6) {
+                            return 0;
+                        }
+                        $unpack_data = \unpack('Cnull/Ntotal_length/Cstart', $buffer);
+                        if ($unpack_data['null'] !== 0x00 || $unpack_data['start'] !== 0x02) {
+                            return -1; //数据错误，底层会自动关闭连接
+                        }
+                        return $unpack_data['total_length'];
+                    }
                 ],
                 'event' => [
                     'onReceive' => function ($server, $fd, $reactor_id, $data) {
                         //定长
-                        $data = (array)json_decode(substr($data,4), true);
+                        $data = (array)json_decode(substr($data, 6), true);
                         $result = LogWorkerClient::getHandle($data); #获取数据处理
-                        $server->send($fd, pack('N', 4 + strlen($result)) . $result);
+                        $server->send($fd, pack('CNC', 0x00, 6 + strlen($result), 0x02) . $result);
                         return;
 
                         //换行符
@@ -99,7 +106,7 @@ if (GLOBAL_SWOOLE) {
                 'port' => DATA_TCP_PORT,
                 'setting' => [
                     //'protocol' => '\Workerman\Protocols\Text',
-                    'protocol' => '\Workerman\Protocols\Frame',
+                    'protocol' => 'LogPackN2', //'\Workerman\Protocols\Frame',
                 ],
                 'event' => [
                     'onMessage' => function (\Workerman\Connection\ConnectionInterface $connection, $data) {
