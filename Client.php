@@ -160,7 +160,7 @@ $clientConf = array_merge($clientConf, [
             if (!is_array($data)) return;
             #echo $data['msg'],PHP_EOL;
             if ($data['msg'] === REPORT_IP_KEY && REPORT_IP_KEY!=='') {
-                $server->send('OK:' . DATA_TCP_PORT);
+                $server->sendto($client_info['address'], $client_info['port'], 'OK:' . DATA_TCP_PORT);
                 return;
             }
             $data['ip'] = $client_info['address'];

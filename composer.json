@@ -3,13 +3,13 @@
     "description": "日志服务",
     "license": "MIT",
     "keywords": ["myphp"],
-    "homepage": "https://gitee.com/dz/log_server",
+    "homepage": "https://github.com/ncwsky/log_server",
     "minimum-stability": "dev",
     "authors": [
         {
             "name": "路人",
             "email": "ep1086@qq.com",
-            "homepage": "https://gitee.com/dz/log_server",
+            "homepage": "https://github.com/ncwsky/log_server",
             "role": "Developer"
         }
     ],
