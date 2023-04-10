@@ -931,6 +931,10 @@ class LogWorkerClient extends LogWorkerAbstract
                 return '0:0:';
             }
         }
+        //起始时间为00:00:00点允许误差 *10; 针对23:59日志跨天存储无法查询问题
+        if ($start_time > 0 && $start_time <= (mktime(0, 0, 0) + DATA_WRITE_TIME_TICK)) {
+            $start_time -= DATA_WRITE_TIME_TICK * 10;
+        }
 
         $isBinarySearch = false;
         $stat = fstat($fp); //获取文件统计信息
