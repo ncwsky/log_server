@@ -912,9 +912,9 @@ class LogWorkerClient extends LogWorkerAbstract
     public static function getLog($type, $module, $name='', $start_time = 0, $end_time = 0, $code = '', $msg = '', $offset = 0, $count = 100)
     {
         if($type=='' || $module=='') return '0:0:';//['offset' => 0, 'data' => ''];
-
+        $ymd = $start_time ? date('Y-m-d', $start_time) : date('Y-m-d');
         // log文件
-        $log_file = DATA_LOG_DIR . '/' . $type .'/' . $module . '/' . ($start_time ? date('Y-m-d', $start_time) : date('Y-m-d'));
+        $log_file = DATA_LOG_DIR . '/' . $type .'/' . $module . '/' . $ymd;
 
         if(!is_file($log_file)) return '0:0:';
 
@@ -932,7 +932,7 @@ class LogWorkerClient extends LogWorkerAbstract
             }
         }
         //起始时间为00:00:00点允许误差 *10; 针对23:59日志跨天存储无法查询问题
-        if ($start_time > 0 && $start_time <= (mktime(0, 0, 0) + DATA_WRITE_TIME_TICK)) {
+        if ($start_time > 0 && $start_time <= (strtotime($ymd) + DATA_WRITE_TIME_TICK)) {
             $start_time -= DATA_WRITE_TIME_TICK * 10;
         }
 
